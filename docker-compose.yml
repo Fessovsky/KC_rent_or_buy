@@ -1,0 +1,93 @@
+version: '3'
+
+services:
+  rent-or-buy-frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    container_name: rent-or-buy-frontend
+    restart: unless-stopped
+    tty: true
+    environment:
+      SERVICE_NAME: rent-or-buy-frontend
+      SERVICE_TAGS: dev
+    working_dir: /var/www/frontend
+    volumes:
+      - ./:/var/www/frontend
+      - ./docker/php/conf.d/:/usr/local/etc/php/conf.d/
+    networks:
+      - app-network
+
+  rent-or-buy-backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    container_name: rent-or-buy-backend
+    restart: unless-stopped
+    user: "${UID}:${GID}"
+    tty: true
+    environment:
+      SERVICE_NAME: rent-or-buy-backend
+      SERVICE_TAGS: dev
+    working_dir: /var/www/
+    volumes:
+      - ./:/var/www
+      - ./docker/php/conf.d/:/usr/local/etc/php/conf.d/
+    networks:
+      - app-network
+
+  rent-or-buy-nginx:
+    image: nginx:alpine
+    container_name: rent-or-buy-webserver
+    restart: unless-stopped
+    tty: true
+    ports:
+      - "80:80"
+      - "8080:8080"
+    volumes:
+      - ./docker/nginx/conf.d/:/etc/nginx/conf.d/
+      - ./:/var/www
+      - ./docker/logs/nginx/:/var/log/nginx
+    environment:
+      NGINX_ENVSUBST_TEMPLATE_SUFFIX: ".conf"
+      FRONTEND_APP_URL: http://frontend.local # Update with your frontend URL
+      BACKEND_APP_URL: http://backend.local # Update with your backend URL
+    networks:
+      app-network:
+        aliases:
+          - frontend.local
+          - backend.local
+
+  rent-or-buy-db:
+    image: mariadb:latest
+    restart: unless-stopped
+    container_name: rent-or-buy-db
+    environment:
+      MYSQL_DATABASE: ${DB_DATABASE}
+      MYSQL_USER: ${DB_USERNAME}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./docker/mysql:/var/lib/mysql
+      - ./docker/logs/mysql:/var/log/mysql/
+    networks:
+      - app-network
+    expose:
+      - '3306'
+
+  rent-or-buy-redis:
+    image: redis:latest
+    container_name: rent-or-buy-redis
+    command: redis-server --requirepass ${REDIS_PASSWORD}
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  dbdata:
+    driver: local

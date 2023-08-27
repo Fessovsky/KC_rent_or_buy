@@ -1,0 +1,43 @@
+# Use php:7.3-fpm-bullseye as base image
+FROM php:7.3-fpm-bullseye
+
+# Install additional dependencies
+RUN set -ex; \
+    apt-get update; \
+    apt-get install -y --no-install-recommends \
+        busybox-static \
+        bzip2 \
+        libldap-common \
+        rsync \
+        mc \
+        nano \
+        wget \
+        git \
+        build-essential \
+        libfreetype6-dev \
+        locales \
+        zip \
+        vim \
+        unzip \
+        curl \
+        libzip-dev
+
+# Install PHP extensions
+RUN docker-php-ext-install pdo_mysql zip exif pcntl gd
+
+# Install Xdebug (if needed)
+ RUN wget https://github.com/xdebug/xdebug/archive/refs/tags/3.1.6.tar.gz; \
+     tar -xvf 3.1.6.tar.gz; \
+     cd xdebug-3.1.6; \
+     phpize; \
+     ./configure --enable-xdebug; \
+     make; \
+     make install
+
+# Install Composer
+RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+
+RUN chown -R www-data:www-data /var/www/frontend
+RUN chmod -R g=u /var/www/forntend
+
+USER www-data
