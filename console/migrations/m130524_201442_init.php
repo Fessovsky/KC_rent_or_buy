@@ -18,8 +18,9 @@ class m130524_201442_init extends Migration
             'email' => $this->string()->notNull()->unique(),
             'password_hash' => $this->string()->notNull(),
             'access_token' => $this->string(32)->notNull(),
-            'created_at' => $this->integer()->notNull(),
-            'updated_at' => $this->integer()->notNull(),
+            'created_at' => $this->dateTime()->notNull(),
+            'updated_at' => $this->dateTime()->notNull(),
+            'status' => $this->smallInteger()->notNull()->defaultValue(1),
         ], $tableOptions);
     }
 

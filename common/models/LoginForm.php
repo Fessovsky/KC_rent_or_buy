@@ -39,12 +39,18 @@ class LoginForm extends Model
      * @param string $attribute the attribute currently being validated
      * @param array $params the additional name-value pairs given in the rule
      */
-    public function validatePassword($attribute, $params)
+    public function validatePassword()
     {
         if (!$this->hasErrors()) {
             $user = $this->getUser();
-            if (!$user || !$user->validatePassword($this->password)) {
-                $this->addError($attribute, 'Incorrect username or password.');
+            if (!$user) {
+                $this->addError('email', Yii::t('app','Некорректный логин или пароль'));
+            } else {
+                if (\Yii::$app->security->validatePassword($this->password, $user->password_hash)) {
+                    return true;
+                } else {
+                    $this->addError('email', Yii::t('app','Некорректный логин или пароль'));
+                }
             }
         }
     }
@@ -59,7 +65,7 @@ class LoginForm extends Model
         if ($this->validate()) {
             return Yii::$app->user->login($this->getUser(), $this->rememberMe ? 3600 * 24 * 30 : 0);
         }
-        
+
         return false;
     }
 
@@ -71,7 +77,7 @@ class LoginForm extends Model
     protected function getUser()
     {
         if ($this->_user === null) {
-            $this->_user = User::findByUsername($this->username);
+            $this->_user = User::find()->where(['login' => $this->username])->one();
         }
 
         return $this->_user;
