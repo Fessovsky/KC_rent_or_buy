@@ -7,28 +7,35 @@ use backend\dto\SignUpDTO;
 use common\models\User;
 use yii\web\BadRequestHttpException;
 use yii\web\ServerErrorHttpException;
+use yii\web\UnauthorizedHttpException;
 
 final class UserService
 {
     public function login(LoginDTO $loginDTO)
     {
-        if(!$loginDTO->username) {
+        if (!$loginDTO->username) {
             $user = User::findByEmail($loginDTO->email);
         }
-        if(!$loginDTO->email) {
+        if (!$loginDTO->email) {
             $user = User::findByUsername($loginDTO->username);
         }
 
         if (!$user || !$user->validatePassword($loginDTO->password)) {
-            return null;
+            throw new UnauthorizedHttpException('Invalid username or password.');
         }
 
         $user->generateAccessToken();
         if ($user->save()) {
-            return $user;
+            return [
+                "success" => true,
+                'user' => [
+                    $user['id'],
+                    $user['access_token']
+                ]
+            ];
         }
 
-        return null;
+        return ["success" => false];
     }
 
     public function setUsername($username)
@@ -38,7 +45,7 @@ final class UserService
 
     public function signUp(SignUpDTO $signUpDTO)
     {
-        if(User::findByEmail($signUpDTO->email)) {
+        if (User::findByEmail($signUpDTO->email)) {
             throw new BadRequestHttpException(\Yii::t('app', 'User with this email already exists'));
         }
         $user = new User();
@@ -47,8 +54,11 @@ final class UserService
         $user->generateAccessToken();
         $user->created_at = date('Y-m-d H:i:s');
         $user->updated_at = date('Y-m-d H:i:s');
-        if($user->save()) {
-            return $user;
+        if ($user->save()) {
+            return [
+                $user['id'],
+                $user['access_token']
+            ];
         }
         throw new ServerErrorHttpException(\Yii::t('app', 'User not created'));
     }
