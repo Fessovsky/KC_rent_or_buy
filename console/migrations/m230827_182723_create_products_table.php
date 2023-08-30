@@ -18,7 +18,6 @@ class m230827_182723_create_products_table extends Migration
             'price' => $this->decimal(10, 2)->notNull(),
             'description' => $this->text(),
             'image' => $this->string(),
-            'quantity' => $this->integer()->notNull()->defaultValue(0),
             'in_rental' => $this->integer()->notNull()->defaultValue(0),
             'created_at' => $this->dateTime()->notNull(),
             'updated_at' => $this->dateTime()->notNull(),

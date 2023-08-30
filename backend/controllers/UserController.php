@@ -2,11 +2,11 @@
 
 namespace backend\controllers;
 
+use backend\dto\LoginDTO;
 use backend\dto\SignUpDTO;
-use common\models\User;
-use common\services\TokenAuthBehavior;
 use common\services\UserService;
 use Yii;
+use yii\filters\auth\HttpBearerAuth;
 use yii\web\BadRequestHttpException;
 use yii\web\Response;
 
@@ -20,12 +20,6 @@ class UserController extends ApiController
     }
     public function beforeAction($action)
     {
-        if ($action->id == 'signup'
-            || $action->id == 'reset-password'
-            || $action->id == 'login'
-        ) {
-            $this->enableCsrfValidation = false; // disable CSRF validation for this actions
-        }
         Yii::$app->response->format = Response::FORMAT_JSON;
 
         return parent::beforeAction($action);
@@ -34,10 +28,10 @@ class UserController extends ApiController
     public function behaviors()
     {
         $behaviors = parent::behaviors();
-
-//        $behaviors["authenticator"] = [
-//            'class' => TokenAuthBehavior::class,
-//        ];
+        $behaviors["authenticator"] = [
+            'class' => HttpBearerAuth::class,
+            'except' => ['sign-up', 'login'],
+        ];
         $behaviors['contentNegotiator']['formats'] = [
             'application/json' => \yii\web\Response::FORMAT_JSON,
         ];
@@ -53,15 +47,15 @@ class UserController extends ApiController
             throw new BadRequestHttpException(\Yii::t('app', 'Email or password is empty'));
         }
 
-        $user = $this->userService->login($email, $password);
-        if(!$user) {
+        $loginDTO = new LoginDTO();
+        $loginDTO->email = $email;
+        $loginDTO->password = $password;
+        $userLogged = $this->userService->login($loginDTO);
+        if(!$userLogged) {
             throw new BadRequestHttpException(\Yii::t('app', 'Email or password is incorrect'));
         }
 
-        return [
-            'token' => $user->access_token,
-            'user' => $user->id
-        ];
+        return $userLogged;
     }
 
     // TODO refactor if email validation is needed
@@ -84,11 +78,20 @@ class UserController extends ApiController
         if ($user) {
             return [
                 'message' => 'User registered successfully.',
-                'access_token' => $user->access_token,
+                'registration_data' => $user,
             ];
         } else {
             throw new BadRequestHttpException('Failed to register user.');
         }
+    }
+
+    // TODO implement later
+    public function actionLogout()
+    {
+        $this->userService->logout();
+        return [
+            'message' => 'User logged out successfully.',
+        ];
     }
 //    TODO add logout
 //    TODO add reset password
