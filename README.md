@@ -8,6 +8,13 @@ INSTALLATION
 - Apply migrations with console command yii migrate.
 - (in progress)
 
+TODO
+-----
+- [ ] Check and update README.md
+- [ ] Add SWAGGER
+- [ ] Add Token refresh logic
+- [ ] Add tests
+
 DIRECTORY STRUCTURE
 -------------------
 

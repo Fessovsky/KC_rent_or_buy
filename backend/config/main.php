@@ -45,10 +45,9 @@ return [
             'enablePrettyUrl' => true,
             'showScriptName' => false,
             'rules' => [
-                '' => 'site/index',
-                '<alias:index|contact|login|logout|signup>' => 'site/<alias>',
-                '<controller:\w+>/<action:\w+>/<id:\d+>' => '<controller>/<action>',
-                '<controller:\w+>/<action:\w+>' => '<controller>/<action>',
+                'POST /product/(create|login)' => 'product/<action>',
+                'POST /<controller>/login' => '/<controller>/login',
+                '/<controller>/login' => 'site/login',
             ],
         ]
     ],
