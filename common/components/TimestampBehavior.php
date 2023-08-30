@@ -19,7 +19,7 @@ class TimestampBehavior extends Behavior
     {
         $this->owner->created_at = date('Y-m-d H:i:s');
         $this->owner->updated_at = date('Y-m-d H:i:s');
-        $this->owner->in_rental = 0;
+        $this->owner->status = 0;
     }
 
     public function beforeUpdate($event)

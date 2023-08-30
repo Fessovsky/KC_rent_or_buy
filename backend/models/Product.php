@@ -23,7 +23,7 @@ class Product extends ActiveRecord
             [['name', 'price', 'description', 'image'], 'required'],
             [['price'], 'number'],
             [['description'], 'string'],
-            [[ 'in_rental'], 'integer'],
+            [[ 'status'], 'integer'],
             [['created_at', 'updated_at'], 'safe'],
             [['name', 'image'], 'string', 'max' => 255],
         ];
@@ -36,7 +36,7 @@ class Product extends ActiveRecord
             'price' => 'Price',
             'description' => 'Description',
             'image' => 'Image',
-            'in_rental' => 'In Rental',
+            'status' => 'Status 0 - free, 1 - in rent, 2 - sold',
             'created_at' => 'Created At',
             'updated_at' => 'Updated At',
         ];
