@@ -9,24 +9,23 @@ class ProductRepository implements ProductRepositoryInterface
 {
     public function createProduct(ProductDTO $productDTO)
     {
-        $product = new Product();
-        $product->name = $productDTO->name;
-        $product->description = $productDTO->description;
-        $product->price = $productDTO->price;
-        $product->image = $productDTO->image;
-        if ($product->save()) {
-            return [
-                'success' => true,
-                'message' => 'Product was created successfully',
-                'product' => $product
-            ];
+        try {
+            $product = new Product();
+            $product->name = $productDTO->name;
+            $product->description = $productDTO->description;
+            $product->price = $productDTO->price;
+            $product->image = $productDTO->image;
+            if ($product->save()) {
+                return [
+                    'success' => true,
+                    'message' => 'Product was created successfully',
+                    'product' => $product
+                ];
+            }
+            throw new \Exception('Product was not created', 500);
+        } catch (\Exception $e) {
+            return new \Exception($e->getMessage(), 500);
         }
-        return [
-            'success' => false,
-            'errors' => $product->errors,
-            'message' => 'Product was not created'
-        ];
-
     }
 
     public function updateProduct($product)
